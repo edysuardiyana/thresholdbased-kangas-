@@ -36,9 +36,9 @@ def main():
 
 
     print sig_output
-    #plt.plot(data_seq)
-    #plt.plot(sig_output)
-    #plt.show()
+    plt.plot(data_seq)
+    plt.plot(sig_output)
+    plt.show()
 
 
 if __name__ == '__main__':
