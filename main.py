@@ -2,10 +2,15 @@ import matplotlib.pyplot as plt
 import vertical_accel
 import dynamic_sum_vector
 import median_filter
+import algorithm_1
+import algorithm_2
+import algorithm_3
 
+ARRAY_TUPLED = namedtuple('ARRAY_TUPLED', 'AXC AYC AZC GXC GYC GZC AVMC GVMC'
+                                 ' AXT AYT AZT GXT GYT GZT AVMT GVMT ANNOT')
+WIN_LENGTH = 3
 def read_sequence():
     path = "/Users/ArseneLupin/Documents/edy/thresholdbased-kangas-/standing_example.csv"
-    win_length = 3
     data_seq = []
     x_seq = []
     y_seq = []
@@ -13,32 +18,24 @@ def read_sequence():
     with open(path) as obj:
         for line in obj:
             raw_data = line.split(",")
-            numeric_value = float(raw_data[6])
-            x_val = float(raw_data[0])
-            y_val = float(raw_data[1])
-            z_val = float(raw_data[2])
-            data_seq.append(numeric_value)
-            x_seq.append(x_val)
-            y_seq.append(y_val)
-            z_seq.append(z_val)
+            ori_data = [float(x) for x in raw_data[:len(raw_data)]]
+            tupled_data = ARRAY_TUPLED(*ori_data)
+            x_seq.append(tupled_data.AXC)
+            y_seq.append(tupled_data.AYC)
+            z_seq.append(tupled_data.AZC)
 
-        #filter the data using median filter with window length = 3
-        data_seq_filt = median_filter.median_filter(x_seq, win_length)
-        x_median = median_filter.median_filter(x_seq, win_length)
-        y_median = median_filter.median_filter(y_seq, win_length)
-        z_median = median_filter.median_filter(z_seq, win_length)
-    return data_seq_filt, x_median, y_median, z_median
+        x_median = median_filter.median_filter(x_seq, WIN_LENGTH)
+        y_median = median_filter.median_filter(y_seq, WIN_LENGTH)
+        z_median = median_filter.median_filter(z_seq, WIN_LENGTH)
+    return x_median, y_median, z_median
 
 def main():
     order = 2
     cut_off = 0.25
     win_length = 3
-    data_seq, x_seq, y_seq, z_seq = read_sequence()
+    data_seq= read_sequence()
 
-    svd_seq = dynamic_sum_vector.dynamic_sum_vector(x_seq, y_seq, z_seq, order, cut_off)
-    z_seq = vertical_accel.vertical_accel(data_seq,svd_seq)
-    plt.plot(svd_seq)
-    plt.show()
+
 
 
 
