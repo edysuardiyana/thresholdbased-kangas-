@@ -8,4 +8,4 @@ def vertical_accel(SV_tot, SV_d):
         a_vert_seq.append(a_vertical)
     _, max_z_val = max(enumerate(a_vert_seq),key=operator.itemgetter(1))
 
-    return max_z_val
+    return a_vert_seq, max_z_val
