@@ -5,9 +5,9 @@ ORDER = 2
 CUT_OFF 0.25
 def dynamic_sum_vector(x_seq, y_seq, z_seq):
 
-    x_hp = bwf.digital_filter(ORDER, CUT_OFF, x_seq)
-    y_hp = bwf.digital_filter(ORDER, CUT_OFF, x_seq)
-    z_hp = bwf.digital_filter(ORDER, CUT_OFF, x_seq)
+    x_hp = bwf.high_filter(ORDER, CUT_OFF, x_seq)
+    y_hp = bwf.high_filter(ORDER, CUT_OFF, x_seq)
+    z_hp = bwf.high_filter(ORDER, CUT_OFF, x_seq)
 
     svd_seq = []
     for i in range(len(x_hp)):

@@ -15,6 +15,7 @@ def read_sequence():
     x_seq = []
     y_seq = []
     z_seq = []
+    annot_seq = []
     with open(path) as obj:
         for line in obj:
             raw_data = line.split(",")
@@ -23,11 +24,12 @@ def read_sequence():
             x_seq.append(tupled_data.AXC)
             y_seq.append(tupled_data.AYC)
             z_seq.append(tupled_data.AZC)
+            annot_seq.append(tupled_data.ANNOT)
 
         x_median = median_filter.median_filter(x_seq, WIN_LENGTH)
         y_median = median_filter.median_filter(y_seq, WIN_LENGTH)
         z_median = median_filter.median_filter(z_seq, WIN_LENGTH)
-    return x_median, y_median, z_median
+    return x_median, y_median, z_median, annot_seq
 
 def main():
     order = 2
