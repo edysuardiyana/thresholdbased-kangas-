@@ -9,6 +9,7 @@ import algorithm_3
 ARRAY_TUPLED = namedtuple('ARRAY_TUPLED', 'AXC AYC AZC GXC GYC GZC AVMC GVMC'
                                  ' AXT AYT AZT GXT GYT GZT AVMT GVMT ANNOT')
 WIN_LENGTH = 3
+
 def read_sequence():
     path = "/Users/ArseneLupin/Documents/edy/thresholdbased-kangas-/standing_example.csv"
     data_seq = []
@@ -32,10 +33,31 @@ def read_sequence():
     return x_median, y_median, z_median, annot_seq
 
 def main():
-    order = 2
-    cut_off = 0.25
-    win_length = 3
-    data_seq= read_sequence()
+    #order = 2
+    #cut_off = 0.25
+    #win_length = 3
+    listname = []
+    alg_1 = []
+    alg_2 = []
+    alg_3 = []
+
+    x_seq, y_seq, z_seq = read_sequence()
+
+    for name in listname:
+        x_seq, y_seq, z_seq = read_sequence(name)
+        #alg 1
+        true_positive_1, false_positive_1, true_negative_1, false_negative_1 = algorithm_1.alg_1(x_seq, y_seq, z_seq)
+        alg_1.append([true_positive_1, false_positive_1, true_negative_1, false_negative_1])
+
+        #alg 2
+        true_positive_2, false_positive_2, true_negative_2, false_negative_2 = algorithm_2.alg_2(x_seq, y_seq, z_seq)
+        alg_2.append([true_positive_2, false_positive_2, true_negative_2, false_negative_2])
+
+        #alg 3
+        true_positive_3, false_positive_3, true_negative_3, false_negative_3 = algorithm_3.alg_3(x_seq, y_seq, z_seq)
+        alg_3.append([true_positive_3, false_positive_3, true_negative_3, false_negative_3])
+
+
 
 
 

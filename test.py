@@ -9,3 +9,12 @@ print val
 
 z = abs(4-10)
 print z
+
+x = []
+
+for i in range(3):
+    m = i
+    n = i+1
+    x.append([m,n])
+
+print x

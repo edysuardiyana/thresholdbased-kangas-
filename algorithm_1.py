@@ -1,6 +1,5 @@
 #this is source code for algorithm 1
 #IMPACT+POSTURE
-# do the median filter first
 # * use 0.1 s non-overlapped sliding window
 # * calculate maximum value of SV_tot and SV_d and calculate the difference between SV_tot_max and sv_tot_min
 # * compare the values above to the thresholdbased
@@ -9,7 +8,6 @@
 # * calculate the averages from data above
 # * if the average <= 0.5 then the posture is lying
 import dynamic_sum_vector
-import median_filter
 import operator
 import sv_tot
 import sv_minmax
@@ -27,6 +25,20 @@ THRESHOLD_SV_TOT = 2.0
 THRESHOLD_SV_D = 1.7
 THRESHODL_Z = 1.5
 THRESHOLD_MINMAX = 2.0
+
+FALL_FORWARD = 2
+FALL_BACKWARD = 6
+FALL_LEFT = 10
+FALL_RIGHT = 11
+FALL_BLIND_FORWARD = 12
+FALL_BLIND_BACKWARD = 13
+
+FALL_SET = set([FALL_FORWARD,
+                FALL_BACKWARD,
+                FALL_LEFT,
+                FALL_RIGHT,
+                FALL_BLIND_FORWARD,
+                FALL_BLIND_BACKWARD])
 
 
 def check_first_feat(x_seq,y_seq,z_seq):
@@ -60,6 +72,7 @@ def alg_1(freq_rate, x_seq, y_seq, z_seq, annot_seq):
     detect_flag = False
     sec_feat_flag = False
     final_detec_flag = False
+    expect_flag = False
     annot = 0
     for i in range(len(x_seq)):
 
@@ -67,6 +80,11 @@ def alg_1(freq_rate, x_seq, y_seq, z_seq, annot_seq):
         buffer_y.append(y_seq[i])
         buffer_z.append(z_seq[i])
         buffer_annot.append(annot_seq[i])
+
+        true_positive = 0
+        false_positive = 0
+        true_negative = 0
+        false_negative = 0
 
         if len(buffer_x)>= WIN_LENGTH:
             if not sec_feat_flag:
@@ -84,8 +102,25 @@ def alg_1(freq_rate, x_seq, y_seq, z_seq, annot_seq):
                         del buffer_y[:index_max+WIN_LYING]
                         del buffer_z[:index_max+WIN_LYING]
                         sec_feat_flag = False
+
+                        #confusion matrix calculation
+
+                        if annot in FALL_SET and final_detec_flag:
+                            #true positive
+                            true_positive = true_positive + 1
+                        else if annot not in FALL_SET and final_detec_flag:
+                            #false positive
+                            false_positive = false_positive + 1
+                        else if annot not in FALL_SET and not final_detec_flag:
+                            #true negative
+                            true_negative = true_negative + 1
+                        else:
+                            #false negative
+                            false_negative = false_negative + 1
                 else:
                     del buffer_x[0:WIN_LENGTH]
                     del buffer_y[0:WIN_LENGTH]
                     del buffer_z[0:WIN_LENGTH]
                     sec_feat_flag = False
+
+    return true_positive, false_positive, true_negative, false_negative
