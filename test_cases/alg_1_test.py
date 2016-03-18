@@ -74,3 +74,28 @@ class alg_1_test(unittest.TestCase):
         minmax_val = minmax.calc_sv_max_min(x_seq, y_seq, z_seq)
 
         self.assertAlmostEqual(minmax_val, math.sqrt(50))
+
+    def alg_1_test(self):
+        #test case for the integration
+
+        x = [1.0]*800
+        y = [1.0]*800
+        z = [1.0]*800
+
+        x[100] = 3
+        x[101] = 3.5
+        x[102] = 4
+        x[103] = 3.25
+
+        y[100] = 3
+        y[101] = 3.5
+        y[102] = 4
+        y[103] = 3.25
+
+        z[100] = 3
+        z[101] = 3.5
+        z[102] = 4
+        z[103] = 3.25
+
+        annot = [2]*800
+        

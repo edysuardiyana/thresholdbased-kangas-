@@ -16,5 +16,4 @@ def find_max_min(seq):
     _, max_val = max(enumerate(seq),key=operator.itemgetter(1))
     _, min_val = min(enumerate(seq),key=operator.itemgetter(1))
     differ_maxmin = abs(max_val - min_val)
-    print differ_maxmin
     return differ_maxmin
