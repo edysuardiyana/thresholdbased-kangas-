@@ -1,20 +1,34 @@
 import operator
 
-a = [1,2,3,4,5,6,6,7,0]
+import butterworth_filter as bwf
+from scipy import signal
+import matplotlib.pyplot as plt
 
-index, val = min(enumerate(a),key=operator.itemgetter(1))
+import median_filter
+import vertical_accel as zv
+import dynamic_sum_vector as svd
+import sv_tot as svt
 
-print index
-print val
 
-z = abs(4-10)
-print z
+x = [0]*10
+y = [0]*10
+z = [0]*10
 
-x = []
+x[5] = 3.5
+y[5] = 3.5
+z[5] = 3.5
 
-for i in range(3):
-    m = i
-    n = i+1
-    x.append([m,n])
+svd,_ = svd.dynamic_sum_vector(x,y,z)
+svt,_,_ = svt.check_max(x,y,z)
 
-print x
+z_seq,_ = zv.vertical_accel(svt,svd)
+
+#plt.plot(x_seq)
+#plt.plot(filt_seq)
+#plt.plot(tempf)
+#plt.plot(y)
+#plt.plot(z)
+#plt.plot(svd)
+plt.plot(svt,'r')
+plt.plot(z_seq,'g')
+plt.show()

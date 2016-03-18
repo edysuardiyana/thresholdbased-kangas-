@@ -1,6 +1,8 @@
 import butterworth_filter as bwf
 import math
 import lnorm
+import operator
+
 ORDER = 2
 CUT_OFF = 0.25
 def dynamic_sum_vector(x_seq, y_seq, z_seq):
