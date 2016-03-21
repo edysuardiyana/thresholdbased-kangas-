@@ -16,7 +16,7 @@ ARRAY_TUPLED = namedtuple('ARRAY_TUPLED', 'AXC AYC AZC GXC GYC GZC AVMC GVMC'
 WIN_LENGTH = 3
 
 def read_sequence():
-    path = "/home/edysuardiyana/edy/git/thresholdbased-kangas-/src/data_example.csv"
+    path = "/home/edysuardiyana/edy/git/thresholdbased-kangas-/src/standing_example.csv"
     data_seq = []
     x_seq = []
     y_seq = []
@@ -35,7 +35,7 @@ def read_sequence():
         x_median = median_filter.median_filter(x_seq, WIN_LENGTH)
         y_median = median_filter.median_filter(y_seq, WIN_LENGTH)
         z_median = median_filter.median_filter(z_seq, WIN_LENGTH)
-
+        print len(x_median)
     return x_median, y_median, z_median, annot_seq
 
 def main():

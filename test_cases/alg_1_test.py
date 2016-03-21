@@ -77,25 +77,57 @@ class alg_1_test(unittest.TestCase):
 
     def alg_1_test(self):
         #test case for the integration
+        # 1 segment containing fall
+        x = [1.0]*250
+        y = [1.0]*250
+        z = [1.0]*250
 
-        x = [1.0]*800
-        y = [1.0]*800
-        z = [1.0]*800
+        x[3] = 3
+        x[4] = 3.5
+        x[5] = 4
+        x[6] = 3.25
 
-        x[100] = 3
-        x[101] = 3.5
-        x[102] = 4
-        x[103] = 3.25
+        y[3] = 3
+        y[4] = 3.5
+        y[5] = 4
+        y[6] = 3.25
 
-        y[100] = 3
-        y[101] = 3.5
-        y[102] = 4
-        y[103] = 3.25
+        z[3] = 3
+        z[4] = 3.5
+        z[5] = 4
+        z[6] = 3.25
 
-        z[100] = 3
-        z[101] = 3.5
-        z[102] = 4
-        z[103] = 3.25
+        annot = [2]*250
 
-        annot = [2]*800
-        
+        TP, FP, TN, FN = alg.alg_1(x,y,z,annot)
+
+        self.assertEqual(TP,1)
+        self.assertEqual(FP,0)
+        self.assertEqual(TN,0)
+        self.assertEqual(FN,0)
+
+    def alg_2_test(self):
+        #test case for the integration
+        x = [1.0]*480
+        y = [1.0]*480
+        z = [1.0]*480
+        annot = [2]*480
+
+        x[0] = 4
+
+        y[0] = 4
+
+        z[0] = 4
+
+        for i in range(49,480):
+            annot[i] = 0
+            x[i] = 4
+            y[i] = 4
+            z[i] = 4
+
+        TP, FP, TN, FN = alg.alg_1(x,y,z,annot)
+
+        self.assertEqual(TP,1)
+        self.assertEqual(FP,1)
+        self.assertEqual(TN,0)
+        self.assertEqual(FN,0)
