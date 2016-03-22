@@ -1,3 +1,6 @@
+# note for the author: just use scaled data from Staged-CC experiment
+
+
 import matplotlib.pyplot as plt
 import vertical_accel
 import dynamic_sum_vector
