@@ -18,7 +18,7 @@ ARRAY_TUPLED = namedtuple('ARRAY_TUPLED', 'AXC AYC AZC GXC GYC GZC AVMC GVMC'
 WIN_LENGTH = 3
 
 def read_sequence():
-    path = "/home/edysuardiyana/edy/git/thresholdbased-kangas-/src/data_example_2.csv"
+    path = "/home/edysuardiyana/edy/git/thresholdbased-kangas-/src/standing_example.csv"
     data_seq = []
     x_seq = []
     y_seq = []
@@ -52,6 +52,9 @@ def main():
     for name in listname:
         x_seq, y_seq, z_seq,annot = read_sequence()
         new_annot = micro_annot.micro_annotate(x_seq, y_seq, z_seq, annot)
+        x_seq = x_seq.tolist()
+        y_seq = y_seq.tolist()
+        z_seq = z_seq.tolist()
         #write_output(x_seq, y_seq, z_seq, new_annot)
         #alg 1
         true_positive_1, false_positive_1, true_negative_1, false_negative_1 = algorithm_1.alg_1(x_seq, y_seq, z_seq, new_annot)
