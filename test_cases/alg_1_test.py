@@ -6,6 +6,7 @@ import src.butterworth_filter as bwf
 import src.sv_tot as svt
 import src.sv_minmax as minmax
 import math
+import micro_annot
 
 #print sys.path
 
@@ -78,6 +79,7 @@ class alg_1_test(unittest.TestCase):
     def alg_1_test(self):
         #test case for the integration
         # 1 segment containing fall
+        # assumption: the data has been filtered by median filter
         x = [1.0]*250
         y = [1.0]*250
         z = [1.0]*250
@@ -111,23 +113,53 @@ class alg_1_test(unittest.TestCase):
         x = [1.0]*480
         y = [1.0]*480
         z = [1.0]*480
-        annot = [2]*480
+        annot = [0]*480
 
         x[0] = 4
+        x[1] = 5
+        x[2] = 6
 
         y[0] = 4
+        y[1] = 5
+        y[2] = 6
 
         z[0] = 4
+        z[1] = 5
+        z[2] = 6
 
-        for i in range(49,480):
-            annot[i] = 0
-            x[i] = 4
-            y[i] = 4
-            z[i] = 4
+        annot[0] = 2
 
         TP, FP, TN, FN = alg.alg_1(x,y,z,annot)
 
-        self.assertEqual(TP,1)
+        self.assertEqual(TP,0)
         self.assertEqual(FP,1)
-        self.assertEqual(TN,0)
+        self.assertEqual(TN,23)
         self.assertEqual(FN,0)
+
+    def micro_test(self):
+        x = [0]*20
+        y = [0]*20
+        z = [0]*20
+        annot = [0]*20
+
+        for i in range(0,5):
+            annot[i] = 2
+
+        x[0] = 100
+        y[0] = 100
+        z[0] = 100
+
+        for j in range(10,15):
+            annot[j] = 2
+
+        x[12] = 100
+        y[12] = 100
+        z[12] = 100
+
+
+        new_annot = micro_annot.micro_annotate(x,y,z,annot)
+
+        self.assertEqual(new_annot[0],2)
+        self.assertEqual(new_annot[12],2)
+        self.assertEqual(new_annot[3],0)
+        self.assertEqual(new_annot[11],0)

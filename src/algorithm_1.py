@@ -7,6 +7,8 @@
 # * collect 0.4s samples from above
 # * calculate the averages from data above
 # * if the average <= 0.5 then the posture is lying
+
+# assumption: data that send here has been filtered using median filter
 import dynamic_sum_vector
 import operator
 import sv_tot
@@ -14,10 +16,10 @@ import sv_minmax
 import vertical_accel
 import butterworth_filter
 import numpy as np
-
 import matplotlib.pyplot as plt
+import median_filter
 
-
+MED_WIN = 3
 WIN_LENGTH = 10 #0.1*freq_rate
 WIN_LYING = 40 # 0.4*freq_rate
 WIN_DELAY = 200 # 2* freq_rate
@@ -44,7 +46,6 @@ FALL_SET = set([FALL_FORWARD,
                 FALL_BLIND_FORWARD,
                 FALL_BLIND_BACKWARD])
 
-
 def check_first_feat(x_seq,y_seq,z_seq):
     detect_flag = False
     index_max = 0
@@ -53,12 +54,13 @@ def check_first_feat(x_seq,y_seq,z_seq):
     sv_max_min = sv_minmax.calc_sv_max_min(x_seq, y_seq, z_seq)
     _,z_val = vertical_accel.vertical_accel(sv_tot_seq, sv_d_seq)
 
-    #print "####################################################################"
     #plt.plot(sv_tot_seq)
     #plt.plot(sv_d_seq)
     #plt.show()
-    #print "####################################################################"
 
+    #print sv_tot_max
+
+    print "first check"
     if sv_tot_max > THRESHOLD_SV_TOT or sv_d_max > THRESHOLD_SV_D or sv_max_min >THRESHOLD_MINMAX or z_val > THRESHODL_Z:
         detect_flag = True
 
@@ -68,7 +70,15 @@ def check_second_feat(x_seq, y_seq, z_seq):
     fall_flag = False
     sv_d_seq, sv_d_x = dynamic_sum_vector.dynamic_sum_vector(x_seq, y_seq, z_seq)
     filtered_data = butterworth_filter.low_filter(ORDER, CUT_OFF, sv_d_seq)
+    #print max(filtered_data)
     np_filter = np.array(filtered_data)
+
+    #plt.plot(sv_d_seq,'r')
+    #plt.plot(filtered_data,'g')
+    #plt.show()
+
+    print "second check"
+    #print np_filter.mean()
     if np_filter.mean() <= 0.5:
         fall_flag = True
 
@@ -101,23 +111,22 @@ def alg_1(x_seq, y_seq, z_seq, annot_seq):
         result = 0
         if len(buffer_x)>= WIN_LENGTH:
             if not sec_feat_flag:
-                detect_flag, index_max = check_first_feat(buffer_x[0:WIN_LYING], buffer_y[0:WIN_LYING], buffer_z[0:WIN_LYING])
+                #do median filter
+                detect_flag, index_max = check_first_feat(buffer_x[:WIN_LENGTH], buffer_y[:WIN_LENGTH],buffer_z[:WIN_LENGTH])
                 sec_feat_flag = True
                 annot = buffer_annot[index_max]
+
             else:
                 if detect_flag:
                     if len(buffer_x) >= index_max + WIN_DELAY + WIN_LYING:
-                        del buffer_x[:index_max+WIN_DELAY]
-                        del buffer_y[:index_max+WIN_DELAY]
-                        del buffer_z[:index_max+WIN_DELAY]
-                        del buffer_annot[:index_max+WIN_DELAY]
+                        init_win = index_max + WIN_DELAY
+                        end_win = init_win + WIN_LYING
 
-                        final_detec_flag = check_second_feat(buffer_x[0:WIN_LYING], buffer_y[0:WIN_LYING], buffer_z[0:WIN_LYING])
-
-                        del buffer_x[:index_max+WIN_LYING]
-                        del buffer_y[:index_max+WIN_LYING]
-                        del buffer_z[:index_max+WIN_LYING]
-                        del buffer_annot[:index_max+WIN_LYING]
+                        final_detec_flag = check_second_feat(buffer_x[init_win:end_win], buffer_y[init_win: end_win], buffer_z[init_win: end_win])
+                        del buffer_x[:WIN_LENGTH]
+                        del buffer_y[:WIN_LENGTH]
+                        del buffer_z[:WIN_LENGTH]
+                        del buffer_annot[:WIN_LENGTH]
                         sec_feat_flag = False
 
                         #confusion matrix calculation
@@ -131,10 +140,10 @@ def alg_1(x_seq, y_seq, z_seq, annot_seq):
                         elif result == 4:
                             false_negative = false_negative + 1
                 else:
-                    del buffer_x[0:WIN_LENGTH]
-                    del buffer_y[0:WIN_LENGTH]
-                    del buffer_z[0:WIN_LENGTH]
-                    del buffer_annot[0:WIN_LENGTH]
+                    del buffer_x[:WIN_LENGTH]
+                    del buffer_y[:WIN_LENGTH]
+                    del buffer_z[:WIN_LENGTH]
+                    del buffer_annot[:WIN_LENGTH]
                     sec_feat_flag = False
 
                     #confusion matrix calculation
@@ -167,5 +176,4 @@ def accuracy_check(annot, final_detec_flag):
     else: #in Fall Set and not final_detec_flag
         #false negative
         result = 4
-
     return result

@@ -9,6 +9,8 @@ from collections import namedtuple
 
 import matplotlib.pyplot as plt
 
+import micro_annot
+import csv
 
 
 ARRAY_TUPLED = namedtuple('ARRAY_TUPLED', 'AXC AYC AZC GXC GYC GZC AVMC GVMC'
@@ -16,7 +18,7 @@ ARRAY_TUPLED = namedtuple('ARRAY_TUPLED', 'AXC AYC AZC GXC GYC GZC AVMC GVMC'
 WIN_LENGTH = 3
 
 def read_sequence():
-    path = "/home/edysuardiyana/edy/git/thresholdbased-kangas-/src/standing_example.csv"
+    path = "/home/edysuardiyana/edy/git/thresholdbased-kangas-/src/data_example_2.csv"
     data_seq = []
     x_seq = []
     y_seq = []
@@ -35,7 +37,7 @@ def read_sequence():
         x_median = median_filter.median_filter(x_seq, WIN_LENGTH)
         y_median = median_filter.median_filter(y_seq, WIN_LENGTH)
         z_median = median_filter.median_filter(z_seq, WIN_LENGTH)
-        print len(x_median)
+
     return x_median, y_median, z_median, annot_seq
 
 def main():
@@ -49,8 +51,10 @@ def main():
 
     for name in listname:
         x_seq, y_seq, z_seq,annot = read_sequence()
+        new_annot = micro_annot.micro_annotate(x_seq, y_seq, z_seq, annot)
+        #write_output(x_seq, y_seq, z_seq, new_annot)
         #alg 1
-        true_positive_1, false_positive_1, true_negative_1, false_negative_1 = algorithm_1.alg_1(x_seq, y_seq, z_seq, annot)
+        true_positive_1, false_positive_1, true_negative_1, false_negative_1 = algorithm_1.alg_1(x_seq, y_seq, z_seq, new_annot)
         alg_1.append([true_positive_1, false_positive_1, true_negative_1, false_negative_1])
 
         #alg 2
@@ -62,6 +66,16 @@ def main():
         #alg_3.append([true_positive_3, false_positive_3, true_negative_3, false_negative_3])
 
     print alg_1
+
+def write_output(x_seq, y_seq, z_seq, annot):
+    for i in range(len(x_seq)):
+        path = "/home/edysuardiyana/edy/git/thresholdbased-kangas-/src/output_example.csv"
+        out_file = open(path, "a")
+        csv_writer = csv.writer(out_file, delimiter='\t')
+        temp = [x_seq[i], y_seq[i], z_seq[i], annot[i]]
+        csv_writer.writerow(temp)
+        out_file.close()
+
 
 if __name__ == '__main__':
     main()
