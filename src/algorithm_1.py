@@ -8,7 +8,7 @@
 # * calculate the averages from data above
 # * if the average <= 0.5 then the posture is lying
 
-# assumption: data that send here has been filtered using median filter
+# assumption: data that sent here has been filtered using median filter
 import dynamic_sum_vector
 import operator
 import sv_tot
@@ -19,10 +19,12 @@ import numpy as np
 import matplotlib.pyplot as plt
 import median_filter
 
+#WINDOW LENGTH
 MED_WIN = 3
 WIN_LENGTH = 10 #0.1*freq_rate
 WIN_LYING = 40 # 0.4*freq_rate
 WIN_DELAY = 200 # 2* freq_rate
+
 #thresholds for sensors that were strapped on the waist
 THRESHOLD_SV_TOT = 2.0
 THRESHOLD_SV_D = 1.7
@@ -53,32 +55,19 @@ def check_first_feat(x_seq,y_seq,z_seq):
     sv_d_seq, sv_d_max = dynamic_sum_vector.dynamic_sum_vector(x_seq, y_seq, z_seq)
     sv_max_min = sv_minmax.calc_sv_max_min(x_seq, y_seq, z_seq)
     _,z_val = vertical_accel.vertical_accel(sv_tot_seq, sv_d_seq)
-
-    #plt.plot(sv_tot_seq)
-    #plt.plot(sv_d_seq)
-    #plt.show()
-
-    #print sv_tot_max
-
-    print "first check"
+    #print "first check"
     if sv_tot_max > THRESHOLD_SV_TOT or sv_d_max > THRESHOLD_SV_D or sv_max_min >THRESHOLD_MINMAX or z_val > THRESHODL_Z:
         detect_flag = True
 
     return detect_flag, index_max
 
 def check_second_feat(x_seq, y_seq, z_seq):
+    #print "second check"
     fall_flag = False
     sv_d_seq, sv_d_x = dynamic_sum_vector.dynamic_sum_vector(x_seq, y_seq, z_seq)
     filtered_data = butterworth_filter.low_filter(ORDER, CUT_OFF, sv_d_seq)
-    #print max(filtered_data)
     np_filter = np.array(filtered_data)
 
-    #plt.plot(sv_d_seq,'r')
-    #plt.plot(filtered_data,'g')
-    #plt.show()
-
-    print "second check"
-    #print np_filter.mean()
     if np_filter.mean() <= 0.5:
         fall_flag = True
 
@@ -101,55 +90,27 @@ def alg_1(x_seq, y_seq, z_seq, annot_seq):
     true_negative = 0
     false_negative = 0
 
-    for i in range(len(x_seq)):
-
-        buffer_x.append(x_seq[i])
-        buffer_y.append(y_seq[i])
-        buffer_z.append(z_seq[i])
-        buffer_annot.append(annot_seq[i])
-
+    while len(x_seq) >= WIN_LENGTH:
         result = 0
-        if len(buffer_x)>= WIN_LENGTH:
-            if not sec_feat_flag:
-                #do median filter
-                detect_flag, index_max = check_first_feat(buffer_x[:WIN_LENGTH], buffer_y[:WIN_LENGTH],buffer_z[:WIN_LENGTH])
-                sec_feat_flag = True
-                annot = buffer_annot[index_max]
-
-            else:
-                if detect_flag:
-                    if len(buffer_x) >= index_max + WIN_DELAY + WIN_LYING:
-                        init_win = index_max + WIN_DELAY
-                        end_win = init_win + WIN_LYING
-
-                        final_detec_flag = check_second_feat(buffer_x[init_win:end_win], buffer_y[init_win: end_win], buffer_z[init_win: end_win])
-                        del buffer_x[:WIN_LENGTH]
-                        del buffer_y[:WIN_LENGTH]
-                        del buffer_z[:WIN_LENGTH]
-                        del buffer_annot[:WIN_LENGTH]
-                        sec_feat_flag = False
-
-                        #confusion matrix calculation
-                        result = accuracy_check(annot, final_detec_flag)
-                        if result == 1:
-                            true_positive = true_positive + 1
-                        elif result == 2:
-                            false_positive = false_positive + 1
-                        elif result == 3:
-                            true_negative = true_negative + 1
-                        elif result == 4:
-                            false_negative = false_negative + 1
-                else:
-                    del buffer_x[:WIN_LENGTH]
-                    del buffer_y[:WIN_LENGTH]
-                    del buffer_z[:WIN_LENGTH]
-                    del buffer_annot[:WIN_LENGTH]
+        if not sec_feat_flag:
+            detect_flag, index_max = check_first_feat(x_seq[:WIN_LENGTH], y_seq[:WIN_LENGTH],z_seq[:WIN_LENGTH])
+            sec_feat_flag = True
+            annot = annot_seq[index_max]
+        else:
+            if detect_flag:
+                if len(x_seq) >= index_max + WIN_DELAY + WIN_LYING:
+                    init_win = index_max + WIN_DELAY
+                    end_win = init_win + WIN_LYING
+                    final_detec_flag = check_second_feat(x_seq[init_win:end_win], y_seq[init_win: end_win], z_seq[init_win: end_win])
+                    del x_seq[:WIN_LENGTH]
+                    del y_seq[:WIN_LENGTH]
+                    del z_seq[:WIN_LENGTH]
+                    del annot_seq[:WIN_LENGTH]
                     sec_feat_flag = False
 
                     #confusion matrix calculation
-                    final_detec_flag = False
                     result = accuracy_check(annot, final_detec_flag)
-                    if result==1:
+                    if result == 1:
                         true_positive = true_positive + 1
                     elif result == 2:
                         false_positive = false_positive + 1
@@ -157,13 +118,38 @@ def alg_1(x_seq, y_seq, z_seq, annot_seq):
                         true_negative = true_negative + 1
                     elif result == 4:
                         false_negative = false_negative + 1
+                else:
+                    # the case where high peak was deteced in the first check but there is no more samples to process
+                    del x_seq[:]
+                    del y_seq[:]
+                    del z_seq[:]
+                    del annot_seq[:]
+
+            else:
+
+                del x_seq[:WIN_LENGTH]
+                del y_seq[:WIN_LENGTH]
+                del z_seq[:WIN_LENGTH]
+                del annot_seq[:WIN_LENGTH]
+                sec_feat_flag = False
+
+                #confusion matrix calculation
+                final_detec_flag = False
+                result = accuracy_check(annot, final_detec_flag)
+                if result==1:
+                    true_positive = true_positive + 1
+                elif result == 2:
+                    false_positive = false_positive + 1
+                elif result == 3:
+                    true_negative = true_negative + 1
+                elif result == 4:
+                    false_negative = false_negative + 1
 
     return true_positive, false_positive, true_negative, false_negative
 
 def accuracy_check(annot, final_detec_flag):
     result = 0
-    #print annot
-    #print final_detec_flag
+
     if annot in FALL_SET and final_detec_flag:
         #true positive
         result = 1

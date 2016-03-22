@@ -80,86 +80,73 @@ class alg_1_test(unittest.TestCase):
         #test case for the integration
         # 1 segment containing fall
         # assumption: the data has been filtered by median filter
-        x = [1.0]*250
-        y = [1.0]*250
-        z = [1.0]*250
+
+        x = [0.5]* 243
+        y = [0.5]* 243
+        z = [0.5]* 243
+        annot = [0]* 243
 
         x[3] = 3
-        x[4] = 3.5
-        x[5] = 4
-        x[6] = 3.25
 
         y[3] = 3
-        y[4] = 3.5
-        y[5] = 4
-        y[6] = 3.25
 
         z[3] = 3
-        z[4] = 3.5
-        z[5] = 4
-        z[6] = 3.25
 
-        annot = [2]*250
-
+        annot[3] = 2
         TP, FP, TN, FN = alg.alg_1(x,y,z,annot)
 
         self.assertEqual(TP,1)
         self.assertEqual(FP,0)
-        self.assertEqual(TN,0)
+        self.assertEqual(TN,23)
         self.assertEqual(FN,0)
 
     def alg_2_test(self):
         #test case for the integration
-        x = [1.0]*480
-        y = [1.0]*480
-        z = [1.0]*480
-        annot = [0]*480
+        # the condition where the fall is detected but there is no more samples to process
+        x = [0.5]* 243
+        y = [0.5]* 243
+        z = [0.5]* 243
+        annot = [0]* 243
+        x[3] = 3
+        x[11] = 4
 
-        x[0] = 4
-        x[1] = 5
-        x[2] = 6
+        y[3] = 3
+        y[11] = 4
 
-        y[0] = 4
-        y[1] = 5
-        y[2] = 6
+        z[3] = 3
+        z[11] = 4
 
-        z[0] = 4
-        z[1] = 5
-        z[2] = 6
-
-        annot[0] = 2
+        annot[11] = 2
 
         TP, FP, TN, FN = alg.alg_1(x,y,z,annot)
 
         self.assertEqual(TP,0)
         self.assertEqual(FP,1)
-        self.assertEqual(TN,23)
+        self.assertEqual(TN,0)
         self.assertEqual(FN,0)
 
-    def micro_test(self):
-        x = [0]*20
-        y = [0]*20
-        z = [0]*20
-        annot = [0]*20
 
-        for i in range(0,5):
-            annot[i] = 2
+    def alg_3_test(self):
+        #test case for the integration
+        # the condition where there are 2 peaks but only 1 fall
+        x = [0.5]* 500
+        y = [0.5]* 500
+        z = [0.5]* 500
+        annot = [0]* 500
+        x[3] = 3
+        x[11] = 4
 
-        x[0] = 100
-        y[0] = 100
-        z[0] = 100
+        y[3] = 3
+        y[11] = 4
 
-        for j in range(10,15):
-            annot[j] = 2
+        z[3] = 3
+        z[11] = 4
 
-        x[12] = 100
-        y[12] = 100
-        z[12] = 100
+        annot[11] = 2
 
+        TP, FP, TN, FN = alg.alg_1(x,y,z,annot)
 
-        new_annot = micro_annot.micro_annotate(x,y,z,annot)
-
-        self.assertEqual(new_annot[0],2)
-        self.assertEqual(new_annot[12],2)
-        self.assertEqual(new_annot[3],0)
-        self.assertEqual(new_annot[11],0)
+        self.assertEqual(TP,1)
+        self.assertEqual(FP,1)
+        self.assertEqual(TN,48)
+        self.assertEqual(FN,0)
