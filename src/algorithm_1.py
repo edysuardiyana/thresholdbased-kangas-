@@ -74,10 +74,6 @@ def check_second_feat(x_seq, y_seq, z_seq):
     return fall_flag
 
 def alg_1(x_seq, y_seq, z_seq, annot_seq):
-    buffer_x = []
-    buffer_y = []
-    buffer_z = []
-    buffer_annot = []
     detect_flag = False
     sec_feat_flag = False
     final_detec_flag = False
