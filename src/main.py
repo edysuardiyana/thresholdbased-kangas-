@@ -1,6 +1,5 @@
 # note for the author: just use scaled data from Staged-CC experiment
 
-
 import matplotlib.pyplot as plt
 import vertical_accel
 import dynamic_sum_vector
@@ -20,8 +19,8 @@ ARRAY_TUPLED = namedtuple('ARRAY_TUPLED', 'AXC AYC AZC GXC GYC GZC AVMC GVMC'
                                  ' AXT AYT AZT GXT GYT GZT AVMT GVMT ANNOT')
 WIN_LENGTH = 3
 
-def read_sequence():
-    path = "/home/edysuardiyana/edy/git/thresholdbased-kangas-/src/standing_example.csv"
+def read_sequence(name):
+    path = "/home/edysuardiyana/edy/experiment_kangas/waist_scaled/"+name+".csv"
     data_seq = []
     x_seq = []
     y_seq = []
@@ -29,7 +28,7 @@ def read_sequence():
     annot_seq = []
     with open(path) as obj:
         for line in obj:
-            raw_data = line.split(",")
+            raw_data = line.split()
             ori_data = [float(x) for x in raw_data[:len(raw_data)]]
             tupled_data = ARRAY_TUPLED(*ori_data)
             x_seq.append(tupled_data.AXC)
@@ -47,13 +46,15 @@ def main():
     #order = 2
     #cut_off = 0.25
     #win_length = 3
-    listname = [1]
+    listname = read_name()
     alg_1 = []
     alg_2 = []
     alg_3 = []
 
     for name in listname:
-        x_seq, y_seq, z_seq,annot = read_sequence()
+        command_str = "testing "+name
+        print command_str
+        x_seq, y_seq, z_seq,annot = read_sequence(name)
         new_annot = micro_annot.micro_annotate(x_seq, y_seq, z_seq, annot)
         x_seq = x_seq.tolist()
         y_seq = y_seq.tolist()
@@ -72,6 +73,29 @@ def main():
         #alg_3.append([true_positive_3, false_positive_3, true_negative_3, false_negative_3])
 
     print alg_1
+
+def read_name():
+    path = "/home/edysuardiyana/edy/git/thresholdbased-kangas-/src/listname"
+    name_list = []
+    with open(path) as obj_name:
+        for data in obj_name:
+            raw = data.split()
+            name_list.append(raw[0])
+
+    print name_list
+    return name_list
+
+def write_result(alg):
+    for i in range(len(alg)):
+        path = "/home/edysuardiyana/edy/git/thresholdbased-kangas-/src/result.csv"
+        out_file = open(path, "w")
+        csv_writer = csv.writer(out_file, delimiter='\t')
+        temp = [x_seq[i], y_seq[i], z_seq[i], annot[i]]
+        csv_writer.writerow(temp)
+        out_file.close()
+
+
+
 
 def write_output(x_seq, y_seq, z_seq, annot):
     for i in range(len(x_seq)):
