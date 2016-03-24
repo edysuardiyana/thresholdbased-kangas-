@@ -61,9 +61,9 @@ def main():
         z_seq = z_seq.tolist()
         #write_output(x_seq, y_seq, z_seq, new_annot)
         #alg 1
-        true_positive_1, false_positive_1, true_negative_1, false_negative_1 = algorithm_1.alg_1(x_seq, y_seq, z_seq, new_annot)
-        alg_1.append([true_positive_1, false_positive_1, true_negative_1, false_negative_1])
-
+        tp_1, fp_1, tn_1, fn_1 = algorithm_1.alg_1(x_seq, y_seq, z_seq, new_annot)
+        alg_1.append([tp_1, fp_1, tn_1, fn_1])
+        write_result(tp_1, fp_1, tn_1, fn_1)
         #alg 2
         #true_positive_2, false_positive_2, true_negative_2, false_negative_2 = algorithm_2.alg_2(x_seq, y_seq, z_seq)
         #alg_2.append([true_positive_2, false_positive_2, true_negative_2, false_negative_2])
@@ -85,18 +85,17 @@ def read_name():
     print name_list
     return name_list
 
-def write_result(alg):
-    for i in range(len(alg)):
-        path = "/home/edysuardiyana/edy/git/thresholdbased-kangas-/src/result.csv"
-        out_file = open(path, "w")
-        csv_writer = csv.writer(out_file, delimiter='\t')
-        temp = [x_seq[i], y_seq[i], z_seq[i], annot[i]]
-        csv_writer.writerow(temp)
-        out_file.close()
+def write_result(tp,fp,tn,fn):
+    path = "/home/edysuardiyana/edy/git/thresholdbased-kangas-/result.csv"
+    out_file = open(path, "a")
+    csv_writer = csv.writer(out_file, delimiter='\t')
+    temp = [tp,fp,tn,fn]
+    csv_writer.writerow(temp)
+    out_file.close()
 
 
 
-
+################################################################################
 def write_output(x_seq, y_seq, z_seq, annot):
     for i in range(len(x_seq)):
         path = "/home/edysuardiyana/edy/git/thresholdbased-kangas-/src/output_example.csv"
