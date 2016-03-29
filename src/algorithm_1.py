@@ -18,6 +18,8 @@ import butterworth_filter
 import numpy as np
 import matplotlib.pyplot as plt
 import median_filter
+import csv
+
 
 #WINDOW LENGTH
 MED_WIN = 3
@@ -58,8 +60,7 @@ def check_first_feat(x_seq,y_seq,z_seq):
     #print "first check"
     if sv_tot_max > THRESHOLD_SV_TOT or sv_d_max > THRESHOLD_SV_D or sv_max_min >THRESHOLD_MINMAX or z_val > THRESHODL_Z:
         detect_flag = True
-
-    return detect_flag, index_max
+    return sv_tot_max, sv_d_max, z_val, detect_flag, index_max
 
 def check_second_feat(x_seq, y_seq, z_seq):
     #print "second check"
@@ -67,19 +68,20 @@ def check_second_feat(x_seq, y_seq, z_seq):
     sv_d_seq, sv_d_x = dynamic_sum_vector.dynamic_sum_vector(x_seq, y_seq, z_seq)
     filtered_data = butterworth_filter.low_filter(ORDER, CUT_OFF, sv_d_seq)
     np_filter = np.array(filtered_data)
-
-    if np_filter.mean() <= 0.5:
+    lying_val = np_filter.mean()
+    if lying_val <= 0.5:
         fall_flag = True
 
-    return fall_flag
+    return lying_val, fall_flag
 
-def alg_1(x_seq, y_seq, z_seq, annot_seq):
+def alg_1(x_seq, y_seq, z_seq, annot_seq, name):
     detect_flag = False
     sec_feat_flag = False
     final_detec_flag = False
     expect_flag = False
     annot = 0
 
+    conf_list = []
 
     true_positive = 0
     false_positive = 0
@@ -89,38 +91,47 @@ def alg_1(x_seq, y_seq, z_seq, annot_seq):
     while len(x_seq) >= WIN_LENGTH:
         result = 0
         if not sec_feat_flag:
-            detect_flag, index_max = check_first_feat(x_seq[:WIN_LENGTH], y_seq[:WIN_LENGTH],z_seq[:WIN_LENGTH])
+            #detect_flag, index_max = check_first_feat(x_seq[:WIN_LENGTH], y_seq[:WIN_LENGTH],z_seq[:WIN_LENGTH])
+            sv_tot, sv_d, z_val, detect_flag, index_max = check_first_feat(x_seq[:WIN_LENGTH], y_seq[:WIN_LENGTH],z_seq[:WIN_LENGTH])
             sec_feat_flag = True
             annot = annot_seq[index_max]
+
+            #write the param value
+            if annot != 100:
+                write_param_value(name, sv_tot, sv_d, z_val, annot)
         else:
             if detect_flag:
                 if len(x_seq) >= index_max + WIN_DELAY + WIN_LYING:
                     init_win = index_max + WIN_DELAY
                     end_win = init_win + WIN_LYING
-                    final_detec_flag = check_second_feat(x_seq[init_win:end_win], y_seq[init_win: end_win], z_seq[init_win: end_win])
+                    lying_val, final_detec_flag = check_second_feat(x_seq[init_win:end_win], y_seq[init_win: end_win], z_seq[init_win: end_win])
+                    #check lying val
+                    param_lying(name, lying_val, annot)
+
                     del x_seq[:WIN_LENGTH]
                     del y_seq[:WIN_LENGTH]
                     del z_seq[:WIN_LENGTH]
                     del annot_seq[:WIN_LENGTH]
                     sec_feat_flag = False
-
                     #confusion matrix calculation
-                    result = accuracy_check(annot, final_detec_flag)
-                    if result == 1:
-                        true_positive = true_positive + 1
-                    elif result == 2:
-                        false_positive = false_positive + 1
-                    elif result == 3:
-                        true_negative = true_negative + 1
-                    elif result == 4:
-                        false_negative = false_negative + 1
+
+                    if annot!= 100:
+                        conf_list.append([annot,final_detec_flag])
+                        result = accuracy_check(annot, final_detec_flag)
+                        if result == 1:
+                            true_positive = true_positive + 1
+                        elif result == 2:
+                            false_positive = false_positive + 1
+                        elif result == 3:
+                            true_negative = true_negative + 1
+                        elif result == 4:
+                            false_negative = false_negative + 1
                 else:
                     # the case where high peak was deteced in the first check but there is no more samples to process
                     del x_seq[:]
                     del y_seq[:]
                     del z_seq[:]
                     del annot_seq[:]
-
             else:
 
                 del x_seq[:WIN_LENGTH]
@@ -131,16 +142,19 @@ def alg_1(x_seq, y_seq, z_seq, annot_seq):
 
                 #confusion matrix calculation
                 final_detec_flag = False
-                result = accuracy_check(annot, final_detec_flag)
-                if result==1:
-                    true_positive = true_positive + 1
-                elif result == 2:
-                    false_positive = false_positive + 1
-                elif result == 3:
-                    true_negative = true_negative + 1
-                elif result == 4:
-                    false_negative = false_negative + 1
 
+                if annot != 100:
+                    conf_list.append([annot,final_detec_flag])
+                    result = accuracy_check(annot, final_detec_flag)
+                    if result==1:
+                        true_positive = true_positive + 1
+                    elif result == 2:
+                        false_positive = false_positive + 1
+                    elif result == 3:
+                        true_negative = true_negative + 1
+                    elif result == 4:
+                        false_negative = false_negative + 1
+    write_confusion(name,conf_list)
     return true_positive, false_positive, true_negative, false_negative
 
 def accuracy_check(annot, final_detec_flag):
@@ -159,3 +173,27 @@ def accuracy_check(annot, final_detec_flag):
         #false negative
         result = 4
     return result
+
+def write_confusion(name, result_list):
+    path = "/home/edysuardiyana/edy/git/thresholdbased-kangas-/confusion/"+name+".csv"
+    out_file = open(path, "w")
+    csv_writer = csv.writer(out_file, delimiter='\t')
+    for line in result_list:
+        csv_writer.writerow(line)
+    out_file.close()
+
+def write_param_value(name, sv_tot, sv_d, z_val, annot):
+    path = "/home/edysuardiyana/edy/git/thresholdbased-kangas-/param/"+name+".csv"
+    out_file = open(path, "a")
+    csv_writer = csv.writer(out_file, delimiter='\t')
+    line = [sv_tot,sv_d, z_val,annot]
+    csv_writer.writerow(line)
+    out_file.close()
+
+def param_lying(name, lying_val, annot):
+    path = "/home/edysuardiyana/edy/git/thresholdbased-kangas-/param_lying/"+name+".csv"
+    out_file = open(path, "a")
+    csv_writer = csv.writer(out_file, delimiter='\t')
+    line = [lying_val, annot]
+    csv_writer.writerow(line)
+    out_file.close()

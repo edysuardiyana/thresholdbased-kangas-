@@ -61,7 +61,7 @@ def main():
         z_seq = z_seq.tolist()
         #write_output(x_seq, y_seq, z_seq, new_annot)
         #alg 1
-        tp_1, fp_1, tn_1, fn_1 = algorithm_1.alg_1(x_seq, y_seq, z_seq, new_annot)
+        tp_1, fp_1, tn_1, fn_1 = algorithm_1.alg_1(x_seq, y_seq, z_seq, new_annot,name)
         alg_1.append([tp_1, fp_1, tn_1, fn_1])
         write_result(tp_1, fp_1, tn_1, fn_1)
         #alg 2

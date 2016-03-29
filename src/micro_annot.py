@@ -38,7 +38,7 @@ def micro_annotate(x_seq,y_seq,z_seq, annot):
                     if j == index_max:
                         new_annot.append(2) # fall annotation
                     else:
-                        new_annot.append(0)
+                        new_annot.append(100)
                 del annot_buff[:]
                 new_annot.append(annot[i])
             else:
