@@ -20,7 +20,7 @@ ARRAY_TUPLED = namedtuple('ARRAY_TUPLED', 'AXC AYC AZC GXC GYC GZC AVMC GVMC'
 WIN_LENGTH = 3
 
 def read_sequence(name):
-    path = "/home/edysuardiyana/edy/experiment_kangas/waist_scaled/"+name+".csv"
+    path = "/home/arsene-lupin/git/thresholdbased-kangas-/waist_scaled/"+name+".csv"
     data_seq = []
     x_seq = []
     y_seq = []
@@ -61,7 +61,7 @@ def main():
         z_seq = z_seq.tolist()
         #write_output(x_seq, y_seq, z_seq, new_annot)
         #alg 1
-        tp_1, fp_1, tn_1, fn_1 = algorithm_1.alg_1(x_seq, y_seq, z_seq, new_annot)
+        tp_1, fp_1, tn_1, fn_1 = algorithm_1.alg_1(name,x_seq, y_seq, z_seq, annot)
         alg_1.append([tp_1, fp_1, tn_1, fn_1])
         write_result(tp_1, fp_1, tn_1, fn_1)
         #alg 2
@@ -72,21 +72,18 @@ def main():
         #true_positive_3, false_positive_3, true_negative_3, false_negative_3 = algorithm_3.alg_3(x_seq, y_seq, z_seq)
         #alg_3.append([true_positive_3, false_positive_3, true_negative_3, false_negative_3])
 
-    print alg_1
-
+    print "Work is done, Sir!"
 def read_name():
-    path = "/home/edysuardiyana/edy/git/thresholdbased-kangas-/src/listname"
+    path = "/home/arsene-lupin/git/thresholdbased-kangas-/src/listname"
     name_list = []
     with open(path) as obj_name:
         for data in obj_name:
             raw = data.split()
             name_list.append(raw[0])
-
-    print name_list
     return name_list
 
 def write_result(tp,fp,tn,fn):
-    path = "/home/edysuardiyana/edy/git/thresholdbased-kangas-/result.csv"
+    path = "/home/arsene-lupin/git/thresholdbased-kangas-/result.csv"
     out_file = open(path, "a")
     csv_writer = csv.writer(out_file, delimiter='\t')
     temp = [tp,fp,tn,fn]
